@@ -40,6 +40,13 @@ struct Vec3 {
 	auto length_squared() const -> double{
 		return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
 	}
+
+	inline static auto random() -> Vec3 {
+		return Vec3(randomDouble(), randomDouble(), randomDouble());
+	}
+	inline static auto random(double min, double max) -> Vec3 {
+		return Vec3(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
+	}
 };
 
 using Point3 = Vec3;
@@ -83,4 +90,20 @@ inline auto cross(const Vec3& u, const Vec3& v) -> Vec3 { // cross product (vect
 }
 inline auto unitVector(Vec3 v) -> Vec3 { // to unit length -> (new)
 	return v / v.length();
+}
+
+auto randomInUnitSphere() -> Vec3 {
+	while (true) {
+		auto p = Vec3::random(-1, 1);
+		if (p.length_squared() >= 1) continue;
+		return p;
+	}
+}
+auto randomInHemisphere(const Vec3& normal) -> Vec3 {
+	Vec3 inUnitSphere = randomInUnitSphere();
+	// in same hemisphere as normal. if dot(inUnitSphere, normal) > 0.0, negate inUnitSphere
+	return inUnitSphere * -(dot(inUnitSphere, normal) > 0.0); // maybe turns into a cmov?
+}
+auto randomUnitVector() -> Vec3 {
+	return unitVector(randomInUnitSphere());
 }
