@@ -7,6 +7,7 @@
 #include "Color.hpp"
 #include "HittableList.hpp"
 #include "Sphere.hpp"
+#include "Camera.hpp"
 
 auto rayColor(const Ray& r, const Hittable& world) -> Color {
 	HitRecord rec;
@@ -22,6 +23,7 @@ int main() {
 	const auto aspectRatio = 16.0 / 9.0;
 	const int imageWidth = 400;
 	const int imageHeight = static_cast<int>(imageWidth / aspectRatio);
+	const int samplesPerPixel = 100;
 
 	// World
 	HittableList world;
@@ -29,14 +31,7 @@ int main() {
 	world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100));	// simluated floor
 
 	// Camera
-	auto viewportHeight = 2.0;
-	auto viewportWidth = aspectRatio * viewportHeight;
-	auto focalLength = 1.0;
-
-	auto origin = Point3{ 0, 0, 0 };
-	auto horizontal = Vec3{ viewportWidth, 0, 0 }; // + in x
-	auto vertical = Vec3{0, viewportHeight, 0}; // + in y
-	auto lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - Vec3{0, 0, focalLength};
+	Camera cam;
 
 	// Render
 	std::ofstream outImage;
@@ -45,11 +40,14 @@ int main() {
 	for (int j = imageHeight - 1; j >= 0; j--) {
 		std::cout << "\rScalines remaining: " << j << ' ' << std::flush;
 		for (int i = 0; i < imageWidth; i++) {
-			auto u = ((double) i) / (imageWidth - 1);
-			auto v = ((double) j) / (imageHeight - 1);
-			Ray r{ origin, lowerLeftCorner + u * horizontal + v * vertical - origin };
-			Color pixelColor = rayColor(r, world);
-			writeColor(outImage, pixelColor);
+			Color pixelColor(0, 0, 0);
+			for (int s = 0; s < samplesPerPixel; s++) {
+				auto u = (i + randomDouble()) / (imageWidth - 1);
+				auto v = (j + randomDouble()) / (imageHeight - 1);
+				Ray r = cam.getRay(u, v);
+				pixelColor += rayColor(r, world);
+			}
+			writeColor(outImage, pixelColor, samplesPerPixel);
 		}
 	}
 	outImage.close();

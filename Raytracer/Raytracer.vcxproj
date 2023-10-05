@@ -132,6 +132,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Color.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="Hittable.hpp" />
