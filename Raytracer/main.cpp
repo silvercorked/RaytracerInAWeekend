@@ -2,45 +2,31 @@
 #include <fstream>
 #include <iostream>
 
-#include "Vec3.h"
-#include "Color.h"
-#include "Ray.h"
+#include "common.hpp"
 
-/*
-	Sphere: (x - cx)^2 + (y - cy)^2 + (z - cz)^2 = R^2, where cx, cy, and cz are the circle's center location
-	C = (cx, cy, cz), P = (x, y, z) => (P-C) * (P-C) = R^2
-		if (P-C) . (P-C) < R^2, P is inside the sphere, if > outside, if =, on the sphere
-	use Ray equation for P, P(t) = A + t * b
-	(A + t * b - C) . (A + t * b - C) = R^2
-	t^2*b.b + 2*t*b . (A-C) + (A-C) . (A-C) - R^2 = 0
-		0 roots (sqrt(some -))
-		1 root (root is zero)
-		2 roots (roots are positive)
-*/
-bool hitSphere(const Point3& center, double radius, const Ray& r) {
-	Vec3 oc = r.origin() - center; // A-C
-	auto a = dot(r.direction(), r.direction());	// b . b 
-	auto b = 2.0 * dot(oc, r.direction());		// 2 * b . (A-C)
-	auto c = dot(oc, oc) - radius * radius;		// (A-C) . (A-C) - R^2
-	auto underRadical = b * b - 4 * a * c;
-	return underRadical >= 0;
-}
+#include "Color.hpp"
+#include "HittableList.hpp"
+#include "Sphere.hpp"
 
-Color rayColor(const Ray& r) {
-	if (hitSphere(Point3(0, 0, -1), 0.5, r))	// red sphere at 0,0,-1 with r = 0.5
-		return Color(1, 0, 0);					// where the red is from
+auto rayColor(const Ray& r, const Hittable& world) -> Color {
+	HitRecord rec;
+	if (world.hit(r, 0, infinity, rec))
+		return 0.5 * (rec.Normal + Color(1, 1, 1));
 	Vec3 unitDirection = unitVector(r.direction());
 	auto t = 0.5 * (unitDirection.y() + 1.0); // shift y between 0.5 and 1 for some nice values
 	return (1.0 - t) * Color{1.0, 1.0, 1.0} + t * Color{0.5, 0.7, 1.0}; // lerp blue and white
 }
 
 int main() {
-
-
 	// Image
 	const auto aspectRatio = 16.0 / 9.0;
 	const int imageWidth = 400;
 	const int imageHeight = static_cast<int>(imageWidth / aspectRatio);
+
+	// World
+	HittableList world;
+	world.add(make_shared<Sphere>(Point3(0, 0, -1), 0.5));		// actual circle
+	world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100));	// simluated floor
 
 	// Camera
 	auto viewportHeight = 2.0;
@@ -62,7 +48,7 @@ int main() {
 			auto u = ((double) i) / (imageWidth - 1);
 			auto v = ((double) j) / (imageHeight - 1);
 			Ray r{ origin, lowerLeftCorner + u * horizontal + v * vertical - origin };
-			Color pixelColor = rayColor(r);
+			Color pixelColor = rayColor(r, world);
 			writeColor(outImage, pixelColor);
 		}
 	}
