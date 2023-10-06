@@ -38,13 +38,14 @@ int main() {
 	// World
 	HittableList world;
 	auto materialGround = make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
-	auto materialCenter = make_shared<Lambertian>(Color(0.7, 0.3, 0.3));
-	auto materialLeft = make_shared<Metal>(Color(0.8, 0.8, 0.8), 0.3);
-	auto materialRight = make_shared<Metal>(Color(0.8, 0.6, 0.2), 1.0);
+	auto materialCenter = make_shared<Lambertian>(Color(0.1, 0.2, 0.5));
+	auto materialLeft = make_shared<Dielectric>(1.5);
+	auto materialRight = make_shared<Metal>(Color(0.8, 0.6, 0.2), 0.0);
 
 	world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100, materialGround));	// simluated floor
 	world.add(make_shared<Sphere>(Point3(0, 0, -1), 0.5, materialCenter));		// actual circle
 	world.add(make_shared<Sphere>(Point3(-1.0, 0, -1), 0.5, materialLeft));		// actual circle
+	world.add(make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), -0.4, materialLeft)); // hollow sphere
 	world.add(make_shared<Sphere>(Point3(1.0, 0, -1), 0.5, materialRight));		// actual circle
 
 	// Camera

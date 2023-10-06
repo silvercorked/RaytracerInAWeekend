@@ -94,6 +94,7 @@ inline auto cross(const Vec3& u, const Vec3& v) -> Vec3 { // cross product (vect
 inline auto unitVector(Vec3 v) -> Vec3 { // to unit length -> (new)
 	return v / v.length();
 }
+
 /*
    V\  |N /R       | B 
 	 \ | /         |
@@ -106,6 +107,22 @@ inline auto unitVector(Vec3 v) -> Vec3 { // to unit length -> (new)
 */
 auto reflect(const Vec3& v, const Vec3& n) -> Vec3 {
 	return v - 2 * dot(v, n) * n;
+}
+
+/*
+	Snell's Law:
+	sin theta1 = eta2/eta1 * sin theta2
+	Output ray, R', can be divided into parts parallel to normal and parts perpendicular to normal. R = input ray
+	Rperp = eta2/eta1 * (R + cos theta2 * n) -> eta2/eta * (R + (-R * n) * n)
+	Rparallel = -sqrt(1-abs(rPerp)^2) * n
+
+	Ray's inside material with higher refractive index, no solution to snell's law, no refraction
+*/
+auto refract(const Vec3& uv, const Vec3& n, double etaiOverEtat) {
+	auto cosTheta = fmin(dot(-uv, n), 1.0);
+	Vec3 rOutPerp = etaiOverEtat * (uv + cosTheta * n);
+	Vec3 rOutParallel = -sqrt(fabs(1.0 - rOutPerp.length_squared())) * n;
+	return rOutPerp + rOutParallel;
 }
 
 auto randomInUnitSphere() -> Vec3 {
