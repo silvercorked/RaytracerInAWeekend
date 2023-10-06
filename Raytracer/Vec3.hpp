@@ -40,7 +40,10 @@ struct Vec3 {
 	auto length_squared() const -> double{
 		return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
 	}
-
+	auto nearZero() const -> bool {
+		const auto s = 1e-8;
+		return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < s) && (std::fabs(e[2]) < s);
+	}
 	inline static auto random() -> Vec3 {
 		return Vec3(randomDouble(), randomDouble(), randomDouble());
 	}
@@ -90,6 +93,19 @@ inline auto cross(const Vec3& u, const Vec3& v) -> Vec3 { // cross product (vect
 }
 inline auto unitVector(Vec3 v) -> Vec3 { // to unit length -> (new)
 	return v / v.length();
+}
+/*
+   V\  |N /R       | B 
+	 \ | /         |
+	__\|/__________|
+	   \
+	    \
+		 \V
+	R is v + 2 * B. Assume N is a unit vector. length of B = v . n
+	v points inwards, so minus sign to point outwards
+*/
+auto reflect(const Vec3& v, const Vec3& n) -> Vec3 {
+	return v - 2 * dot(v, n) * n;
 }
 
 auto randomInUnitSphere() -> Vec3 {

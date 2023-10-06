@@ -8,8 +8,7 @@
 #include "HittableList.hpp"
 #include "Sphere.hpp"
 #include "Camera.hpp"
-
-constexpr const bool USE_LAMBERTIAN_DIFFUSE				=				true;
+#include "Material.hpp"
 
 auto rayColor(const Ray& r, const Hittable& world, int depth) -> Color {
 	HitRecord rec;
@@ -17,16 +16,11 @@ auto rayColor(const Ray& r, const Hittable& world, int depth) -> Color {
 	if (depth <= 0)
 		return Color(0, 0, 0);
 	if (world.hit(r, 0.001, infinity, rec)) { // 0.001 as min to avoid hitting where we just hit
-		Point3 target;
-		if constexpr (USE_LAMBERTIAN_DIFFUSE) {
-			// Lambertian Diffuse
-			target = rec.p + rec.Normal + randomUnitVector();
-		}
-		else {
-			// Early Diffuse Method
-			target = rec.p + randomInHemisphere(rec.Normal);
-		}
-		return 0.5 * rayColor(Ray(rec.p, target - rec.p), world, depth - 1);
+		Ray scattered;
+		Color attenuation;
+		if (rec.matPtr->scatter(r, rec, attenuation, scattered))
+			return attenuation * rayColor(scattered, world, depth - 1);
+		return Color(0, 0, 0);
 	}
 	Vec3 unitDirection = unitVector(r.direction());
 	auto t = 0.5 * (unitDirection.y() + 1.0); // shift y between 0.5 and 1 for some nice values
@@ -43,8 +37,15 @@ int main() {
 
 	// World
 	HittableList world;
-	world.add(make_shared<Sphere>(Point3(0, 0, -1), 0.5));		// actual circle
-	world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100));	// simluated floor
+	auto materialGround = make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
+	auto materialCenter = make_shared<Lambertian>(Color(0.7, 0.3, 0.3));
+	auto materialLeft = make_shared<Metal>(Color(0.8, 0.8, 0.8), 0.3);
+	auto materialRight = make_shared<Metal>(Color(0.8, 0.6, 0.2), 1.0);
+
+	world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100, materialGround));	// simluated floor
+	world.add(make_shared<Sphere>(Point3(0, 0, -1), 0.5, materialCenter));		// actual circle
+	world.add(make_shared<Sphere>(Point3(-1.0, 0, -1), 0.5, materialLeft));		// actual circle
+	world.add(make_shared<Sphere>(Point3(1.0, 0, -1), 0.5, materialRight));		// actual circle
 
 	// Camera
 	Camera cam;

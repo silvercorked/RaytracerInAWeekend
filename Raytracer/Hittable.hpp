@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Vec3.hpp"
-#include "Ray.hpp"
+#include "common.hpp"
+
+struct Material; // forward declaration
 
 struct HitRecord {
 	Point3 p;
 	Vec3 Normal;
+	shared_ptr<Material> matPtr;
 	double t;
 	bool frontFace;
 

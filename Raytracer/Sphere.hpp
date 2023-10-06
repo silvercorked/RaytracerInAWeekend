@@ -6,9 +6,10 @@
 struct Sphere : public Hittable {
 	Point3 center;
 	double radius;
+	shared_ptr<Material> matPtr;
 
 	Sphere() : radius{ 0.0 } {}
-	Sphere(Point3 cen, double r) : center{ cen }, radius{ r } {};
+	Sphere(Point3 cen, double r, shared_ptr<Material> m) : center{ cen }, radius{ r }, matPtr{ m } {};
 	
 	virtual auto hit(const Ray& r, double tMin, double tMax, HitRecord& rec) const -> bool override;
 };
@@ -47,5 +48,6 @@ auto Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& rec) const -
 	rec.p = r.at(rec.t);
 	Vec3 outwardNormal = (rec.p - this->center) / radius;// normal is in direction of P (hit point/root) - C (center) (points at P from C)
 	rec.setFaceNormal(r, outwardNormal);
+	rec.matPtr = this->matPtr;
 	return true;
 }
