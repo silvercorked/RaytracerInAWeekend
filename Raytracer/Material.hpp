@@ -7,22 +7,24 @@ constexpr const bool USE_LAMBERTIAN_DIFFUSE = true;
 struct HitRecord; // forward declaration
 
 struct Material {
+	virtual ~Material() = default;
 	virtual auto scatter(const Ray& rIn, const HitRecord& rec, Color& attenuation, Ray& scattered) const -> bool = 0;
 };
 
 // Diffuse Material
-struct Lambertian : public Material {
+class Lambertian : public Material {
 	Color albedo;
 
+public:
 	Lambertian(const Color& a) : albedo{ a } {}
 
 	virtual auto scatter(const Ray& rIn, const HitRecord& rec, Color& attenuation, Ray& scattered) const -> bool override {
 		Vec3 scatterDir;
 		if constexpr (USE_LAMBERTIAN_DIFFUSE)
-			scatterDir = rec.Normal + randomUnitVector();	// Lambertian image 2 unit sphere tangent to the surface. pick sphere
+			scatterDir = rec.normal + randomUnitVector();	// Lambertian image 2 unit sphere tangent to the surface. pick sphere
 		else												// on same normal side, get random vector that is within, then go from 
-			scatterDir = randomInHemisphere(rec.Normal);	// hit point to random vector. else case is no Lambertian
-		if (scatterDir.nearZero()) scatterDir = rec.Normal; // avoid generating a zero vector
+			scatterDir = randomInHemisphere(rec.normal);	// hit point to random vector. else case is no Lambertian
+		if (scatterDir.nearZero()) scatterDir = rec.normal; // avoid generating a zero vector
 		scattered = Ray(rec.p, scatterDir);
 		attenuation = albedo;
 		return true;
@@ -30,17 +32,18 @@ struct Lambertian : public Material {
 };
 
 // Metallic Material
-struct Metal : public Material {
+class Metal : public Material {
 	Color albedo;
 	double fuzz;
 
+public:
 	Metal(const Color& a, double f) : albedo{ a }, fuzz{f < 1 ? f : 1} {}
 
 	virtual auto scatter(const Ray& rIn, const HitRecord& rec, Color& attenuation, Ray& scattered) const -> bool override {
-		Vec3 reflected = reflect(unitVector(rIn.direction()), rec.Normal);	// metallic rays are reflected
+		Vec3 reflected = reflect(unitVector(rIn.direction()), rec.normal);	// metallic rays are reflected
 		scattered = Ray(rec.p, reflected + fuzz * randomInUnitSphere());	// jiggle a bit to cause increasing fuzziness w/ anti-aliasing
 		attenuation = albedo;
-		return (dot(scattered.direction(), rec.Normal) > 0);
+		return (dot(scattered.direction(), rec.normal) > 0);
 	}
 };
 
@@ -56,14 +59,14 @@ struct Dielectric : public Material {
 		// if eta2 > eta1 broken inequality
 		// eta2/eta1 * sin theta2 > 1.0 (as sin theta1 cant be bigger than 1).
 		// in these cases, must reflect (total internal reflection)
-		double cosTheta = fmin(dot(-unitDir, rec.Normal), 1.0);	// trig R * n = cos theta
+		double cosTheta = fmin(dot(-unitDir, rec.normal), 1.0);	// trig R * n = cos theta
 		double sinTheta = sqrt(1.0 - cosTheta * cosTheta);		// trig sin theta = sqrt(1-cos^2(theta))
 		bool cannotRefract = refractionRatio * sinTheta > 1.0;
 		Vec3 dir;
 		if (cannotRefract || reflectance(cosTheta, refractionRatio) > randomDouble())
-			dir = reflect(unitDir, rec.Normal);
+			dir = reflect(unitDir, rec.normal);
 		else
-			dir = refract(unitDir, rec.Normal, refractionRatio);
+			dir = refract(unitDir, rec.normal, refractionRatio);
 		scattered = Ray(rec.p, dir);
 		return true;
 	}

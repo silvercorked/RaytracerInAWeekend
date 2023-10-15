@@ -10,35 +10,14 @@
 #include "Camera.hpp"
 #include "Material.hpp"
 
-auto rayColor(const Ray& r, const Hittable& world, int depth) -> Color {
-	HitRecord rec;
-
-	if (depth <= 0)
-		return Color(0, 0, 0);
-	if (world.hit(r, 0.001, infinity, rec)) { // 0.001 as min to avoid hitting where we just hit
-		Ray scattered;
-		Color attenuation;
-		if (rec.matPtr->scatter(r, rec, attenuation, scattered))
-			return attenuation * rayColor(scattered, world, depth - 1);
-		return Color(0, 0, 0);
-	}
-	Vec3 unitDirection = unitVector(r.direction());
-	auto t = 0.5 * (unitDirection.y() + 1.0); // shift y between 0.5 and 1 for some nice values
-	return (1.0 - t) * Color{1.0, 1.0, 1.0} + t * Color{0.5, 0.7, 1.0}; // lerp blue and white
-}
-
 int main() {
-	// Image
-	const auto aspectRatio = 16.0 / 9.0;
-	const int imageWidth = 400;
-	const int imageHeight = static_cast<int>(imageWidth / aspectRatio);
-	const int samplesPerPixel = 100;
-	const int maxDepth = 50;
-
 	// World
 	HittableList world;
+
+	auto R = cos(pi / 4);
+
 	auto materialGround = make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
-	auto materialCenter = make_shared<Lambertian>(Color(0.1, 0.2, 0.5));
+	auto materialCenter = make_shared<Lambertian>(Color(0.3, 0.2, 0.5));
 	auto materialLeft = make_shared<Dielectric>(1.5);
 	auto materialRight = make_shared<Metal>(Color(0.8, 0.6, 0.2), 0.0);
 
@@ -51,23 +30,15 @@ int main() {
 	// Camera
 	Camera cam;
 
-	// Render
-	std::ofstream outImage;
-	outImage.open("out/image.ppm", std::ios::out | std::ios::trunc);
-	outImage << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
-	for (int j = imageHeight - 1; j >= 0; j--) {
-		std::cout << "\rScalines remaining: " << j << ' ' << std::flush;
-		for (int i = 0; i < imageWidth; i++) {
-			Color pixelColor(0, 0, 0);
-			for (int s = 0; s < samplesPerPixel; s++) {
-				auto u = (i + randomDouble()) / (imageWidth - 1);
-				auto v = (j + randomDouble()) / (imageHeight - 1);
-				Ray r = cam.getRay(u, v);
-				pixelColor += rayColor(r, world, maxDepth);
-			}
-			writeColor(outImage, pixelColor, samplesPerPixel);
-		}
-	}
-	outImage.close();
-	std::cout << "\nDone.\n";
+	cam.aspectRatio = 16.0 / 9.0;
+	cam.imageWidth = 800;
+	cam.samplePerPixel = 50;
+	cam.maxDepth = 50;
+
+	cam.vfov = 90;
+	cam.lookFrom = Point3(-2, 2, 1);
+	cam.lookAt = Point3(0, 0, -1);
+	cam.vUp = Vec3(0, 1, 0);
+
+	cam.render(world);
 }

@@ -6,8 +6,8 @@ struct Material; // forward declaration
 
 struct HitRecord {
 	Point3 p;
-	Vec3 Normal;
-	shared_ptr<Material> matPtr;
+	Vec3 normal;
+	shared_ptr<Material> material;
 	double t;
 	bool frontFace;
 
@@ -29,7 +29,7 @@ struct HitRecord {
 	*/
 	inline void setFaceNormal(const Ray& r, const Vec3& outwardNormal) {
 		this->frontFace = dot(r.direction(), outwardNormal) < 0;	// true if inside, false otherwise
-		this->Normal = frontFace ? outwardNormal : -outwardNormal;
+		this->normal = frontFace ? outwardNormal : -outwardNormal;
 	}
 };
 
@@ -38,5 +38,5 @@ struct HitRecord {
 	Normal of the closest is the only one that matters
 */
 struct Hittable {
-	virtual auto hit(const Ray& r, double tMin, double tMax, HitRecord& rec) const -> bool = 0;
+	virtual auto hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool = 0;
 };

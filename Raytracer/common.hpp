@@ -26,12 +26,8 @@ inline auto randomDouble() -> double { // returns a random real in [0,1)
 inline auto randomDouble(double min, double max) -> double { // returns a random real in [min, max)
 	return min + (max - min) * randomDouble();
 }
-inline auto clamp(double x, double min, double max) -> double {
-	if (x < min) return min;
-	if (x > max) return max;
-	return x;
-}
 
 // Common Headers
+#include "Interval.hpp"
 #include "Vec3.hpp"
 #include "Ray.hpp"

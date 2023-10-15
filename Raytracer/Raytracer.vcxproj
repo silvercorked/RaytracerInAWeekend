@@ -137,6 +137,7 @@
     <ClInclude Include="common.hpp" />
     <ClInclude Include="Hittable.hpp" />
     <ClInclude Include="HittableList.hpp" />
+    <ClInclude Include="Interval.hpp" />
     <ClInclude Include="Ray.hpp" />
     <ClInclude Include="Sphere.hpp" />
     <ClInclude Include="Vec3.hpp" />

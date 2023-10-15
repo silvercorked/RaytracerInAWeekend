@@ -44,6 +44,9 @@
     <ClInclude Include="Camera.hpp">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="Interval.hpp">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Material.hpp">

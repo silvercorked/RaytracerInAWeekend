@@ -53,7 +53,6 @@ struct Vec3 {
 };
 
 using Point3 = Vec3;
-using Color = Vec3;
 
 // Vec3 utilities
 // these operator definitions affect conversions.
@@ -128,7 +127,7 @@ auto refract(const Vec3& uv, const Vec3& n, double etaiOverEtat) {
 auto randomInUnitSphere() -> Vec3 {
 	while (true) {
 		auto p = Vec3::random(-1, 1);
-		if (p.length_squared() >= 1) continue;
+		if (p.length_squared() < 1)
 		return p;
 	}
 }
