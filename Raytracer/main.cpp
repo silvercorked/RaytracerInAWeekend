@@ -1,6 +1,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <chrono>
 
 #include "common.hpp"
 
@@ -11,6 +12,7 @@
 #include "Material.hpp"
 
 int main() {
+	auto start = std::chrono::high_resolution_clock::now();
 	// World
 	HittableList world;
 
@@ -35,10 +37,16 @@ int main() {
 	cam.samplePerPixel = 50;
 	cam.maxDepth = 50;
 
-	cam.vfov = 90;
+	cam.vfov = 20;
 	cam.lookFrom = Point3(-2, 2, 1);
 	cam.lookAt = Point3(0, 0, -1);
 	cam.vUp = Vec3(0, 1, 0);
 
+	cam.defocusAngle = 10;
+	cam.focusDistance = 3.4;
+
 	cam.render(world);
+
+	auto end = std::chrono::high_resolution_clock::now();
+	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start) << std::endl;
 }

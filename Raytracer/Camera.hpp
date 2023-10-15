@@ -12,6 +12,8 @@ class Camera {
 	Vec3 pixelDeltaU;			// offset to pixels to the right
 	Vec3 pixelDeltaV;			// offset to pixels below
 	Vec3 u, v, w;				// Camera frame basis vectors (looking towards -w)
+	Vec3 defocusDiskU;			// Defocus disk horizontal radius
+	Vec3 defocusDiskV;			// Defocus disk vertical radius
 public:
 	double aspectRatio = 1.0;	// Ratio of image width over height
 	int imageWidth = 100;		// Rendered image width in pixel count
@@ -22,6 +24,18 @@ public:
 	Point3 lookFrom = Point3(0, 0, -1);	// Point camera is looking from
 	Point3 lookAt = Point3(0, 0, 0);		// Point camera is looking at
 	Vec3 vUp = Vec3(0, 1, 0);			// Camera-relative "up" direction
+
+	double defocusAngle = 0;			// Variation angle of rays through each pixel
+	double focusDistance = 10;			// Distance from Camera lookFrom point to plane of perfect focus
+
+	/* Defocus Blur (Depth of Field) (Thin Lens approximation)
+		Focus plane is orthogonal to the camera view direction
+		Focus distance is the distance between the camera center and the focus plane
+		Viewport lies on the focus plane, centered on the camera view direction vector
+		Grid of pixels locations lies inside the viewport (in the 3d world)
+		Random image sample locations are chosen from the region around the current pixel location
+		Camera fires rays from random points on the lens through the current image sample location
+	*/
 
 	auto render(const Hittable& world) -> void {
 		this->initialize();
@@ -49,29 +63,25 @@ private:
 		
 		this->center = this->lookFrom;
 
-		// Temp to avoid recomputation of this->lookFrom - this->lookAt twice
-		this->w = this->lookFrom - this->lookAt;
-
 		// Determine viewport dimensions.
 		/*
 			|   
 			|  /|
 			| / | h
 			|/  |
-			|___| -z
-			 \theta/2
-			  \
-			   \
+			|___| -z	(at -z in this image, is the focus plane (and in this model, the image plane is at the same distance)
+			 \theta/2					// focal length = focal distance in this model
+			  \								// (length -> dist between cam center and image plane)
+			   \							// (distance -> dist between cam center and focal plane)
 			2 * h = 2 * tan(theta / 2)
 		*/
-		auto focalLen = (this->w).length();
 		auto theta = degreesToRadians(this->vfov);
 		auto h = tan(theta / 2);
-		auto viewportHeight = 2 * h * focalLen;
+		auto viewportHeight = 2 * h * this->focusDistance; // focal len = focal dist in this case
 		auto viewportWidth = viewportHeight * (static_cast<double>(this->imageWidth) / this->imageHeight);
 
 		// Calculate the u,v,w unit basis vectors for the camera coordinate frame.
-		this->w = unitVector(this->w);				// looking toward -w
+		this->w = unitVector(this->lookFrom - this->lookAt);				// looking toward -w
 		this->u = unitVector(cross(this->vUp, w));	// camera right
 		this->v = cross(w, u);						// camera up (vUp != v, v is basis vector based on cam orientation, vUp is const)
 
@@ -84,14 +94,21 @@ private:
 		this->pixelDeltaV = viewportV / this->imageHeight;
 
 		// Calculate the location of the upper left pixel.
-		auto viewportUpperLeft = this->center - (focalLen * this->w) - viewportU / 2 - viewportV / 2;
+		auto viewportUpperLeft = this->center - (this->focusDistance * this->w) - viewportU / 2 - viewportV / 2;
 		this->pixel00Location = viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV);
+		
+		// Calculate the camera defocus disk basis vectors.
+		auto defocusRadius = this->focusDistance * tan(degreesToRadians(this->defocusAngle / 2));
+		this->defocusDiskU = this->u * defocusRadius;
+		this->defocusDiskV = this->v * defocusRadius;
 	}
 	auto getRay(int i, int j) const -> Ray {
-		// get a randomly sampled camera ray for the pixel at location i,j.
+		// get a randomly sampled camera ray for the pixel at location i,j, originating from the camera defocus disk
 		auto pixelCenter = this->pixel00Location + (i * this->pixelDeltaU) + (j * this->pixelDeltaV);
 		auto pixelSample = pixelCenter + pixelSampleSquare();
-		auto rayOrigin = this->center;
+		auto rayOrigin = this->defocusAngle <= 0
+			? this->center
+			: this->defocusDiskSample();
 		auto rayDir = pixelSample - rayOrigin;
 		return Ray(rayOrigin, rayDir);
 	}
@@ -100,6 +117,11 @@ private:
 		auto px = -0.5 + randomDouble();
 		auto py = -0.5 + randomDouble();
 		return (px * this->pixelDeltaU) + (py * this->pixelDeltaV);
+	}
+	auto defocusDiskSample() const -> Point3 {
+		// Returns a random point in the camera defocus disk.
+		auto p = randomInUnitDisk();
+		return this->center + (p[0] * this->defocusDiskU) + (p[1] * this->defocusDiskV);
 	}
 	auto rayColor(const Ray& r, int depth, const Hittable& world) const -> Color {
 		HitRecord rec;

@@ -35,9 +35,9 @@ struct Vec3 {
 		return *this *= 1 / t;
 	}
 	auto length() const -> double {
-		return sqrt(length_squared());
+		return sqrt(lengthSquared());
 	}
-	auto length_squared() const -> double{
+	auto lengthSquared() const -> double{
 		return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
 	}
 	auto nearZero() const -> bool {
@@ -120,21 +120,27 @@ auto reflect(const Vec3& v, const Vec3& n) -> Vec3 {
 auto refract(const Vec3& uv, const Vec3& n, double etaiOverEtat) {
 	auto cosTheta = fmin(dot(-uv, n), 1.0);
 	Vec3 rOutPerp = etaiOverEtat * (uv + cosTheta * n);
-	Vec3 rOutParallel = -sqrt(fabs(1.0 - rOutPerp.length_squared())) * n;
+	Vec3 rOutParallel = -sqrt(fabs(1.0 - rOutPerp.lengthSquared())) * n;
 	return rOutPerp + rOutParallel;
 }
 
 auto randomInUnitSphere() -> Vec3 {
-	while (true) {
-		auto p = Vec3::random(-1, 1);
-		if (p.length_squared() < 1)
-		return p;
-	}
+	auto rho = randomDouble(0, 1);			// spherical to cartesian avoids while loop by embedding distance in rho alone
+	auto theta = randomDouble(0, 2 * pi);
+	auto phi = randomDouble(0, pi);
+	auto p = Vec3(rho * sin(phi) * cos(theta), rho * sin(phi) * sin(theta), rho * cos(phi));
+	return p;
 }
 auto randomInHemisphere(const Vec3& normal) -> Vec3 {
 	Vec3 inUnitSphere = randomInUnitSphere();
 	// in same hemisphere as normal. if dot(inUnitSphere, normal) > 0.0, negate inUnitSphere
 	return inUnitSphere * -(dot(inUnitSphere, normal) > 0.0); // maybe turns into a cmov?
+}
+auto randomInUnitDisk() -> Vec3 {
+	auto theta = randomDouble(0, 2 * pi);	// polar to cartesian avoids while loop by embedding distance in r alone
+	auto r = randomDouble(0, 1);
+	auto p = Vec3(r * cos(theta), r * sin(theta), 0);
+	return p;
 }
 auto randomUnitVector() -> Vec3 {
 	return unitVector(randomInUnitSphere());

@@ -30,9 +30,9 @@ struct Sphere : public Hittable {
 */
 auto Sphere::hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool {
 	Vec3 oc = r.origin() - this->center;				// A-C
-	auto a = r.direction().length_squared();			// b . b (aka, length^2)
+	auto a = r.direction().lengthSquared();			// b . b (aka, length^2)
 	auto half_b = dot(oc, r.direction());				// b = 2 * b . (A-C), this is without the * 2
-	auto c = oc.length_squared() - this->radius * this->radius;		// (A-C) . (A-C) - R^2
+	auto c = oc.lengthSquared() - this->radius * this->radius;		// (A-C) . (A-C) - R^2
 	auto underRadical = half_b * half_b - a * c;
 	if (underRadical < 0)								// does not intersect
 		return false;
