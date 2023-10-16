@@ -4,12 +4,26 @@
 #include "Vec3.hpp"
 
 struct Sphere : public Hittable {
-	Point3 center;
+	Point3 center1;
 	double radius;
 	shared_ptr<Material> material;
+	bool isMoving;
+	Vec3 centerVec;
 
-	Sphere() : radius{ 0.0 } {}
-	Sphere(Point3 cen, double r, shared_ptr<Material> m) : center{ cen }, radius{ r }, material{ m } {};
+	// Stationary Sphere
+	Sphere(Point3 _center, double _radius, shared_ptr<Material> _material) :
+		center1{_center}, radius{ _radius }, material{ _material }, isMoving{ false } {}
+	// Moving Sphere
+	Sphere(Point3 _center1, Point3 _center2, double _radius, shared_ptr<Material> _material) :
+		center1{ _center1 }, radius{ _radius }, material{ _material }
+	{
+		this->centerVec = _center2 - _center1;
+	};
+
+	auto center(double time) const -> Point3 {
+		// linear interpolate from center1 to center 2 by time (t=0 => center1, t=1 => center2
+		return center1 + time * centerVec;
+	}
 	
 	virtual auto hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool override;
 };
@@ -29,8 +43,10 @@ struct Sphere : public Hittable {
 		(-b +- sqrt(b^2 - 4*a*c)) / (2*a) -> (-h +- sqrt(h^2 - a*c)) / a
 */
 auto Sphere::hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool {
-	Vec3 oc = r.origin() - this->center;				// A-C
-	auto a = r.direction().lengthSquared();			// b . b (aka, length^2)
+	Point3 center = this->isMoving
+		? this->center(r.time()) : this->center1;
+	Vec3 oc = r.origin() - center;						// A-C
+	auto a = r.direction().lengthSquared();				// b . b (aka, length^2)
 	auto half_b = dot(oc, r.direction());				// b = 2 * b . (A-C), this is without the * 2
 	auto c = oc.lengthSquared() - this->radius * this->radius;		// (A-C) . (A-C) - R^2
 	auto underRadical = half_b * half_b - a * c;
@@ -46,7 +62,7 @@ auto Sphere::hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool {
 	}
 	rec.t = root;
 	rec.p = r.at(rec.t);
-	Vec3 outwardNormal = (rec.p - this->center) / radius;// normal is in direction of P (hit point/root) - C (center) (points at P from C)
+	Vec3 outwardNormal = (rec.p - center) / radius;// normal is in direction of P (hit point/root) - C (center) (points at P from C)
 	rec.setFaceNormal(r, outwardNormal);
 	rec.material = this->material;
 	return true;

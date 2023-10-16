@@ -110,7 +110,8 @@ private:
 			? this->center
 			: this->defocusDiskSample();
 		auto rayDir = pixelSample - rayOrigin;
-		return Ray(rayOrigin, rayDir);
+		auto rayTime = randomDouble();			// random ray time (between start time 0 and end time 1)
+		return Ray(rayOrigin, rayDir, rayTime);
 	}
 	auto pixelSampleSquare() const -> Vec3 {
 		// returns a random point in the square surrouding a pixel at the origin

@@ -25,7 +25,7 @@ public:
 		else												// on same normal side, get random vector that is within, then go from 
 			scatterDir = randomInHemisphere(rec.normal);	// hit point to random vector. else case is no Lambertian
 		if (scatterDir.nearZero()) scatterDir = rec.normal; // avoid generating a zero vector
-		scattered = Ray(rec.p, scatterDir);
+		scattered = Ray(rec.p, scatterDir, rIn.time());
 		attenuation = albedo;
 		return true;
 	}
@@ -40,8 +40,8 @@ public:
 	Metal(const Color& a, double f) : albedo{ a }, fuzz{f < 1 ? f : 1} {}
 
 	virtual auto scatter(const Ray& rIn, const HitRecord& rec, Color& attenuation, Ray& scattered) const -> bool override {
-		Vec3 reflected = reflect(unitVector(rIn.direction()), rec.normal);	// metallic rays are reflected
-		scattered = Ray(rec.p, reflected + fuzz * randomInUnitSphere());	// jiggle a bit to cause increasing fuzziness w/ anti-aliasing
+		Vec3 reflected = reflect(unitVector(rIn.direction()), rec.normal);				// metallic rays are reflected
+		scattered = Ray(rec.p, reflected + fuzz * randomInUnitSphere(), rIn.time());	// jiggle a bit to cause increasing fuzziness w/ anti-aliasing
 		attenuation = albedo;
 		return (dot(scattered.direction(), rec.normal) > 0);
 	}
@@ -67,7 +67,7 @@ struct Dielectric : public Material {
 			dir = reflect(unitDir, rec.normal);
 		else
 			dir = refract(unitDir, rec.normal, refractionRatio);
-		scattered = Ray(rec.p, dir);
+		scattered = Ray(rec.p, dir, rIn.time());
 		return true;
 	}
 private:
