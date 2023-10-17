@@ -26,6 +26,9 @@ inline auto randomDouble() -> double { // returns a random real in [0,1)
 inline auto randomDouble(double min, double max) -> double { // returns a random real in [min, max)
 	return min + (max - min) * randomDouble();
 }
+inline auto randomInt(int min, int max) -> int {
+	return static_cast<int>(randomDouble(min, max + 1));
+}
 
 // Common Headers
 #include "Interval.hpp"

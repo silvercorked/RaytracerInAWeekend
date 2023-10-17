@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.hpp"
+#include "AxisAlignedBoundingBox.hpp"
 
 struct Material; // forward declaration
 
@@ -39,4 +40,5 @@ struct HitRecord {
 */
 struct Hittable {
 	virtual auto hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool = 0;
+	virtual auto boundingBox() const -> AxisAlignedBoundingBox = 0;
 };

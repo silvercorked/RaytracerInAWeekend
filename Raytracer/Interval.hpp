@@ -5,6 +5,7 @@ struct Interval {
 
 	Interval() : min(+infinity), max(-infinity) {} // default interval is empty (infinity only defined because of where this is included)
 	Interval(double _min, double _max) : min(_min), max(_max) {}
+	Interval(const Interval& a, const Interval& b) : min{ fmin(a.min, b.min) }, max{ fmax(a.max, b.max) } {}
 	auto contains(double x) const -> bool {
 		return min <= x && x <= max;
 	}
@@ -16,6 +17,14 @@ struct Interval {
 		if (x > this->max) return this->max;
 		return x;
 	}
+	auto size() const -> double {
+		return max - min;
+	}
+	auto expand(double delta) const -> Interval {
+		auto padding = delta / 2;
+		return Interval(min - padding, max + padding);
+	}
+
 	static const Interval empty, universe;
 };
 

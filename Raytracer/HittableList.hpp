@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hittable.hpp"
+#include "AxisAlignedBoundingBox.hpp"
 
 #include <memory>
 #include <vector>
@@ -8,16 +9,27 @@
 using std::shared_ptr;
 using std::make_shared;
 
-struct HittableList : public Hittable {
+class HittableList : public Hittable {
+	AxisAlignedBoundingBox bbox;
+
+public:
 	std::vector<shared_ptr<Hittable>> objects;
 	
 	HittableList() {}
-	HittableList(shared_ptr<Hittable> object) { this->add(object); }
+	HittableList(shared_ptr<Hittable> object) {
+		this->add(object);
+	}
 
 	auto clear() -> void { this->objects.clear(); }
-	auto add(shared_ptr<Hittable> object) -> void { this->objects.push_back(object); }
+	auto add(shared_ptr<Hittable> object) -> void {
+		this->objects.push_back(object);
+		this->bbox = AxisAlignedBoundingBox(this->bbox, object->boundingBox());
+	}
 
 	virtual auto hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool override;
+	auto boundingBox() const -> AxisAlignedBoundingBox override {
+		return this->bbox;
+	}
 };
 
 /*

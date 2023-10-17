@@ -47,6 +47,12 @@
     <ClInclude Include="Interval.hpp">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="AxisAlignedBoundingBox.hpp">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingVolumeHierarchy.hpp">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Material.hpp">

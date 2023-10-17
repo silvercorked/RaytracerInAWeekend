@@ -10,6 +10,7 @@
 #include "Sphere.hpp"
 #include "Camera.hpp"
 #include "Material.hpp"
+#include "BoundingVolumeHierarchy.hpp"
 
 int main() {
 	auto start = std::chrono::high_resolution_clock::now();
@@ -51,6 +52,8 @@ int main() {
 	world.add(make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2));
 	auto material3 = make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
 	world.add(make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
+
+	world = HittableList(make_shared<BoundingVolumeHierarchyNode>(world));
 
 	// Camera
 	Camera cam;

@@ -9,17 +9,34 @@ struct Sphere : public Hittable {
 	shared_ptr<Material> material;
 	bool isMoving;
 	Vec3 centerVec;
+	AxisAlignedBoundingBox bbox;
 
 	// Stationary Sphere
-	Sphere(Point3 _center, double _radius, shared_ptr<Material> _material) :
-		center1{_center}, radius{ _radius }, material{ _material }, isMoving{ false } {}
+	Sphere(Point3 _center, double _radius, shared_ptr<Material> _material)
+		: center1{_center},
+		radius{ _radius },
+		material{ _material },
+		isMoving{ false }
+	{
+		auto rVec = Vec3(radius, radius, radius);
+		bbox = AxisAlignedBoundingBox(this->center1 - rVec, this->center1 + rVec);
+	}
 	// Moving Sphere
 	Sphere(Point3 _center1, Point3 _center2, double _radius, shared_ptr<Material> _material) :
-		center1{ _center1 }, radius{ _radius }, material{ _material }
+		center1{ _center1 }, radius{ _radius }, material{ _material }, isMoving{ true }
 	{
+		// need bounds of entire range of motion
+		auto rVec = Vec3(radius, radius, radius);
+		AxisAlignedBoundingBox box1(this->center1 - rVec, this->center1 + rVec);
+		AxisAlignedBoundingBox box2(_center2 - rVec, _center2 + rVec);
+		this->bbox = AxisAlignedBoundingBox(box1, box2);
+
 		this->centerVec = _center2 - _center1;
 	};
 
+	auto boundingBox() const -> AxisAlignedBoundingBox override {
+		return this->bbox;
+	}
 	auto center(double time) const -> Point3 {
 		// linear interpolate from center1 to center 2 by time (t=0 => center1, t=1 => center2
 		return center1 + time * centerVec;
