@@ -6,7 +6,15 @@
 
 
 /*
-
+	By wrapping objects in a tree of bounding boxes, we can check ray hits
+	on bounding boxes, which excludes large portions of objects during ray collision tests.
+	It sort of reduced checks from about N to log N because of being a binary tree (b-tree, k=2).
+	The constructor for this organizes the hittables into the structure. Likely, this construction process
+	which is called every frame, can be heavily optimized to gain 2 effects:
+		- reduced construction time
+		- reduced hit checks during ray calculations
+	The construct used here is an Axis Aligned Bounding box, which is simply calculated
+	but possibly larger, and thus causes more ray checks during hit calculations.
 */
 class BoundingVolumeHierarchyNode : public Hittable {
 	shared_ptr<Hittable> left;

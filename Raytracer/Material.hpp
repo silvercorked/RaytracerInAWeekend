@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.hpp"
+#include "Texture.hpp"
 
 constexpr const bool USE_LAMBERTIAN_DIFFUSE = true;
 
@@ -13,10 +14,11 @@ struct Material {
 
 // Diffuse Material
 class Lambertian : public Material {
-	Color albedo;
+	shared_ptr<Texture> albedo;
 
 public:
-	Lambertian(const Color& a) : albedo{ a } {}
+	Lambertian(const Color& a) : albedo{ make_shared<SolidColor>(a) } {}
+	Lambertian(shared_ptr<Texture> a) : albedo(a) {}
 
 	virtual auto scatter(const Ray& rIn, const HitRecord& rec, Color& attenuation, Ray& scattered) const -> bool override {
 		Vec3 scatterDir;
@@ -26,7 +28,7 @@ public:
 			scatterDir = randomInHemisphere(rec.normal);	// hit point to random vector. else case is no Lambertian
 		if (scatterDir.nearZero()) scatterDir = rec.normal; // avoid generating a zero vector
 		scattered = Ray(rec.p, scatterDir, rIn.time());
-		attenuation = albedo;
+		attenuation = albedo->value(rec.u, rec.v, rec.p);
 		return true;
 	}
 };

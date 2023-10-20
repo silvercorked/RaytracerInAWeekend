@@ -137,11 +137,14 @@
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Color.hpp" />
     <ClInclude Include="common.hpp" />
+    <ClInclude Include="STBImageHelper.hpp" />
+    <ClInclude Include="external\stb_image.h" />
     <ClInclude Include="Hittable.hpp" />
     <ClInclude Include="HittableList.hpp" />
     <ClInclude Include="Interval.hpp" />
     <ClInclude Include="Ray.hpp" />
     <ClInclude Include="Sphere.hpp" />
+    <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Vec3.hpp" />
   </ItemGroup>
   <ItemGroup>

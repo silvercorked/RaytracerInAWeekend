@@ -43,6 +43,30 @@ struct Sphere : public Hittable {
 	}
 	
 	virtual auto hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool override;
+
+private:
+	/*
+		p: a point on the sphere of raidus one, centered at origin
+		u: returned value [0,1] of angle around the y axis from x=-1
+		v: returned value [0.1] of angle from y=-1 to y=+1
+		spherical rho, theta, phi => 1, theta phi.
+		u = 0, v = 0 => bottom left corner of texture
+		u = phi / 2 pi
+		v = theta / pi
+		
+		y = -cos(theta)
+		x = -cos(phi)sin(theta)
+		z = sin(phi)sin(theta)
+		=>
+		phi = atan2(z, -x) + pi
+		theta = arccos(-y)
+	*/
+	static auto getSphereUV(const Point3& p, double& u, double& v) -> void {
+		auto theta = acos(-p.y());
+		auto phi = atan2(-p.z(), p.x()) + pi;
+		u = phi / (2 * pi);
+		v = theta / pi;
+	}
 };
 
 /*
@@ -81,6 +105,7 @@ auto Sphere::hit(const Ray& r, Interval rayT, HitRecord& rec) const -> bool {
 	rec.p = r.at(rec.t);
 	Vec3 outwardNormal = (rec.p - center) / radius;// normal is in direction of P (hit point/root) - C (center) (points at P from C)
 	rec.setFaceNormal(r, outwardNormal);
+	getSphereUV(outwardNormal, rec.u, rec.v);
 	rec.material = this->material;
 	return true;
 }

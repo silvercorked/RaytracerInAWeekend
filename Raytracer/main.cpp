@@ -11,14 +11,15 @@
 #include "Camera.hpp"
 #include "Material.hpp"
 #include "BoundingVolumeHierarchy.hpp"
+#include "Texture.hpp"
 
-int main() {
+auto randomSpheres() -> void {
 	auto start = std::chrono::high_resolution_clock::now();
 	// World
 	HittableList world;
 
-	auto groundMat = make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
-	world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, groundMat));
+	auto groundMaterial = make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
+	world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, groundMaterial));
 
 	for (int a = -11; a < 11; a++) {
 		for (int b = -11; b < 11; b++) {
@@ -74,5 +75,64 @@ int main() {
 	cam.render(world);
 
 	auto end = std::chrono::high_resolution_clock::now();
-	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::microseconds>(end - start) << std::endl;
+	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
+}
+
+auto twoSpheres() -> void {
+	auto start = std::chrono::high_resolution_clock::now();
+	HittableList world;
+
+	auto checker = make_shared<CheckerTexture>(0.32, Color(0.2, 0.3, 0.1), Color(0.9, 0.9, 0.9));
+
+	world.add(make_shared<Sphere>(Point3(0, -10, 0), 10, make_shared<Lambertian>(checker)));
+	world.add(make_shared<Sphere>(Point3(0, 10, 0), 10, make_shared<Lambertian>(checker)));
+	
+	Camera cam;
+	cam.aspectRatio = 16.0 / 9.0;
+	cam.imageWidth = 400;
+	cam.samplePerPixel = 100;
+	cam.maxDepth = 50;
+
+	cam.vfov = 20;
+	cam.lookFrom = Point3(13, 2, 3);
+	cam.lookAt = Point3(0, 0, 0);
+	cam.vUp = Vec3(0, 1, 0);
+
+	cam.defocusAngle = 0;
+
+	cam.render(world);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
+}
+
+auto earth() -> void {
+	auto start = std::chrono::high_resolution_clock::now();
+	auto earthTexture = make_shared<ImageTexture>("earthmap.jpg");
+	auto earthSurface = make_shared<Lambertian>(earthTexture);
+	auto globe = make_shared<Sphere>(Point3(0, 0, 0), 2, earthSurface);
+
+	Camera cam;
+	cam.aspectRatio = 16.0 / 9.0;
+	cam.imageWidth = 400;
+	cam.samplePerPixel = 100;
+	cam.maxDepth = 50;
+
+	cam.vfov = 20;
+	cam.lookFrom = Point3(0, 0, 12);
+	cam.lookAt = Point3(0, 0, 0);
+	cam.vUp = Vec3(0, 1, 0);
+
+	cam.defocusAngle = 0;
+
+	cam.render(HittableList(globe));
+	auto end = std::chrono::high_resolution_clock::now();
+	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
+}
+
+int main() {
+	switch (3) {
+		case 1: randomSpheres(); break;
+		case 2: twoSpheres(); break;
+		case 3: earth(); break;
+	}
 }
