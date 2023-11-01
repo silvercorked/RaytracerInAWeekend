@@ -138,6 +138,7 @@
     <ClInclude Include="Color.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="Perlin.hpp" />
+    <ClInclude Include="Quad.hpp" />
     <ClInclude Include="STBImageHelper.hpp" />
     <ClInclude Include="external\stb_image.h" />
     <ClInclude Include="Hittable.hpp" />

@@ -31,6 +31,14 @@ struct AxisAlignedBoundingBox {
 		z = Interval(box0.z, box1.z);
 	}
 
+	// return an box that has no side narrower than a static amount
+	auto pad() {
+		static const double delta = 0.0001;
+		Interval nX = this->x.size() >= delta ? x : x.expand(delta);
+		Interval nY = this->y.size() >= delta ? y : y.expand(delta);
+		Interval nZ = this->z.size() >= delta ? z : z.expand(delta);
+		return AxisAlignedBoundingBox(nX, nY, nZ);
+	}
 	auto axis(int n) const -> const Interval& {
 		if (n == 1) return y;
 		if (n == 2) return z;
