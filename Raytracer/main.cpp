@@ -129,10 +129,38 @@ auto earth() -> void {
 	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
 }
 
+auto twoPerlinSpheres() -> void {
+	auto start = std::chrono::high_resolution_clock::now();
+	HittableList world;
+
+	auto perlinTexture = make_shared<NoiseTexture>(4);
+
+	world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, make_shared<Lambertian>(perlinTexture)));
+	world.add(make_shared<Sphere>(Point3(0, 2, 0), 2, make_shared<Lambertian>(perlinTexture)));
+
+	Camera cam;
+	cam.aspectRatio = 16.0 / 9.0;
+	cam.imageWidth = 400;
+	cam.samplePerPixel = 100;
+	cam.maxDepth = 50;
+
+	cam.vfov = 20;
+	cam.lookFrom = Point3(13, 2, 3);
+	cam.lookAt = Point3(0, 0, 0);
+	cam.vUp = Vec3(0, 1, 0);
+
+	cam.defocusAngle = 0;
+
+	cam.render(world);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
+}
+
 int main() {
-	switch (3) {
+	switch (4) {
 		case 1: randomSpheres(); break;
 		case 2: twoSpheres(); break;
 		case 3: earth(); break;
+		case 4: twoPerlinSpheres(); break;
 	}
 }

@@ -3,7 +3,7 @@
 #include "common.hpp"
 #include "STBImageHelper.hpp"
 #include "Color.hpp"
-
+#include "Perlin.hpp"
 
 struct Texture {
 	virtual ~Texture() = default;
@@ -67,3 +67,14 @@ public:
 	}
 };
 
+class NoiseTexture : public Texture {
+	Perlin noise;
+	double scale;
+
+public:
+	NoiseTexture(double sc) : scale(sc) {}
+	auto value(double u, double v, const Point3& p) const -> Color override {
+		auto s = this->scale * p;
+		return Color(1, 1, 1) * 0.5 * (1.0 + sin(s.z() + 10 * this->noise.turbulence(s)));
+	}
+};
