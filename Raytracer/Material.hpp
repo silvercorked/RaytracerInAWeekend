@@ -10,6 +10,9 @@ struct HitRecord; // forward declaration
 struct Material {
 	virtual ~Material() = default;
 	virtual auto scatter(const Ray& rIn, const HitRecord& rec, Color& attenuation, Ray& scattered) const -> bool = 0;
+	virtual auto emitted(double u, double v, const Point3& p) const -> Color {
+		return Color(0, 0, 0);
+	}
 };
 
 // Diffuse Material
@@ -78,5 +81,20 @@ private:
 		auto r0 = (1 - refractiveIndex) / (1 + refractiveIndex);
 		r0 = r0 * r0;
 		return r0 + (1 - r0) * pow((1 - cosine), 5);
+	}
+};
+
+class DiffuseLight : public Material {
+	shared_ptr<Texture> emit;
+
+public:
+	DiffuseLight(shared_ptr<Texture> a) : emit(a) {}
+	DiffuseLight(Color c) : emit(make_shared<SolidColor>(c)) {}
+
+	auto scatter(const Ray& rIn, const HitRecord& rec, Color& attentuation, Ray& scattered) const -> bool override {
+		return false;
+	}
+	auto emitted(double u, double v, const Point3& p) const -> Color override {
+		return this->emit->value(u, v, p);
 	}
 };

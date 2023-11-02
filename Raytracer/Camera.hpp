@@ -19,6 +19,7 @@ public:
 	int imageWidth = 100;		// Rendered image width in pixel count
 	int samplePerPixel = 10;	// Count of random samples for each pixel
 	int maxDepth = 10;			// Maximum number of ray bounces into scene
+	Color background;			// Default color without emitted coloring
 	
 	double vfov = 90; // Vertical view angle (field of view)
 	Point3 lookFrom = Point3(0, 0, -1);	// Point camera is looking from
@@ -129,16 +130,16 @@ private:
 
 		if (depth <= 0) // stop gathering if max depth
 			return Color(0, 0, 0);
-
-		if (world.hit(r, Interval(0.001, infinity), rec)) {
-			Ray scattered;
-			Color attenuation;
-			if (rec.material->scatter(r, rec, attenuation, scattered))
-				return attenuation * this->rayColor(scattered, depth - 1, world);
-			return Color(0, 0, 0);
-		}
-		Vec3 unitDir = unitVector(r.direction());
-		auto a = 0.5 * (unitDir.y() + 1.0);
-		return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0); // linear interpolate
+		if (!world.hit(r, Interval(0.001, infinity), rec)) // if hit nothing, return background. still sets rec
+			return this->background;
+		
+		Ray scattered;
+		Color attenuation;
+		Color colorFromEmission = rec.material->emitted(rec.u, rec.v, rec.p);
+		if (!rec.material->scatter(r, rec, attenuation, scattered)) // if no longer casting, off material, return emitted val. sets scattered
+			return colorFromEmission;
+		
+		Color colorFromScatter = attenuation * this->rayColor(scattered, depth - 1, world);
+		return colorFromEmission + colorFromScatter;
 	}
 };

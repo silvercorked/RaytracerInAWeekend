@@ -64,6 +64,7 @@ auto randomSpheres() -> void {
 	cam.imageWidth = 400;
 	cam.samplePerPixel = 100;
 	cam.maxDepth = 50;
+	cam.background = Color(0.7, 0.8, 1.0);
 
 	cam.vfov = 20;
 	cam.lookFrom = Point3(13, 2, 3);
@@ -93,6 +94,7 @@ auto twoSpheres() -> void {
 	cam.imageWidth = 400;
 	cam.samplePerPixel = 100;
 	cam.maxDepth = 50;
+	cam.background = Color(0.7, 0.8, 1.0);
 
 	cam.vfov = 20;
 	cam.lookFrom = Point3(13, 2, 3);
@@ -117,6 +119,7 @@ auto earth() -> void {
 	cam.imageWidth = 400;
 	cam.samplePerPixel = 100;
 	cam.maxDepth = 50;
+	cam.background = Color(0.7, 0.8, 1.0);
 
 	cam.vfov = 20;
 	cam.lookFrom = Point3(0, 0, 12);
@@ -144,6 +147,7 @@ auto twoPerlinSpheres() -> void {
 	cam.imageWidth = 400;
 	cam.samplePerPixel = 100;
 	cam.maxDepth = 50;
+	cam.background = Color(0.7, 0.8, 1.0);
 
 	cam.vfov = 20;
 	cam.lookFrom = Point3(13, 2, 3);
@@ -176,6 +180,7 @@ auto quads() -> void {
 	cam.imageWidth = 400;
 	cam.samplePerPixel = 100;
 	cam.maxDepth = 50;
+	cam.background = Color(0.7, 0.8, 1.0);
 
 	cam.vfov = 80;
 	cam.lookFrom = Point3(0, 0, 9);
@@ -189,12 +194,80 @@ auto quads() -> void {
 	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
 }
 
+auto simpleLight() -> void {
+	auto start = std::chrono::high_resolution_clock::now();
+	HittableList world;
+
+	auto pertext = make_shared<NoiseTexture>(4);
+	world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, make_shared<Lambertian>(pertext)));
+	world.add(make_shared<Sphere>(Point3(0, 2, 0), 2, make_shared<Lambertian>(pertext)));
+
+	auto diffLight = make_shared<DiffuseLight>(Color(4, 4, 4)); // going outside 0-1 range to scale light intensity
+	world.add(make_shared<Sphere>(Point3(0, 7, 0), 2, diffLight));
+	world.add(make_shared<Quad>(Point3(3, 1, -2), Vec3(2, 0, 0), Vec3(0, 2, 0), diffLight));
+
+	Camera cam;
+	cam.aspectRatio = 16.0 / 9.0;
+	cam.imageWidth = 400;
+	cam.samplePerPixel = 100;
+	cam.maxDepth = 50;
+	cam.background = Color(0.0, 0.0, 0.0);
+
+	cam.vfov = 20;
+	cam.lookFrom = Point3(26, 3, 6);
+	cam.lookAt = Point3(0, 2, 0);
+	cam.vUp = Vec3(0, 1, 0);
+
+	cam.defocusAngle = 0;
+
+	cam.render(world);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
+}
+
+auto cornellBox() -> void {
+	auto start = std::chrono::high_resolution_clock::now();
+	HittableList world;
+
+	auto red = make_shared<Lambertian>(Color(0.65, 0.05, 0.05));
+	auto white = make_shared<Lambertian>(Color(0.73, 0.73, 0.73));
+	auto green = make_shared<Lambertian>(Color(0.12, 0.45, 0.15));
+	auto light = make_shared<DiffuseLight>(Color(15, 15, 15));
+
+	world.add(make_shared<Quad>(Point3(555, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, 555), green));
+	world.add(make_shared<Quad>(Point3(0, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, 555), red));
+	world.add(make_shared<Quad>(Point3(343, 554, 332), Vec3(-130, 0, 0), Vec3(0, 0, -105), light));
+	world.add(make_shared<Quad>(Point3(0, 0, 0), Vec3(555, 0, 0), Vec3(0, 0, 555), white));
+	world.add(make_shared<Quad>(Point3(555, 555, 555), Vec3(-555, 0, 0), Vec3(0, 0, -555), white));
+	world.add(make_shared<Quad>(Point3(0, 0, 555), Vec3(555, 0, 0), Vec3(0, 555, 0), white));
+
+	Camera cam;
+	cam.aspectRatio = 1.0;
+	cam.imageWidth = 600;
+	cam.samplePerPixel = 200;
+	cam.maxDepth = 50;
+	cam.background = Color(0.0, 0.0, 0.0);
+
+	cam.vfov = 40;
+	cam.lookFrom = Point3(278, 278, -800);
+	cam.lookAt = Point3(278, 278, 0);
+	cam.vUp = Vec3(0, 1, 0);
+
+	cam.defocusAngle = 0;
+
+	cam.render(world);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
+}
+
 int main() {
-	switch (5) {
+	switch (7) {
 		case 1: randomSpheres(); break;
 		case 2: twoSpheres(); break;
 		case 3: earth(); break;
 		case 4: twoPerlinSpheres(); break;
 		case 5: quads(); break;
+		case 6: simpleLight(); break;
+		case 7: cornellBox(); break;
 	}
 }
