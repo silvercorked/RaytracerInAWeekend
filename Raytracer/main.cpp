@@ -241,11 +241,20 @@ auto cornellBox() -> void {
 	world.add(make_shared<Quad>(Point3(555, 555, 555), Vec3(-555, 0, 0), Vec3(0, 0, -555), white));
 	world.add(make_shared<Quad>(Point3(0, 0, 555), Vec3(555, 0, 0), Vec3(0, 555, 0), white));
 
+	shared_ptr<Hittable> box1 = box(Point3(0, 0, 0), Point3(165, 330, 165), white);
+	box1 = make_shared<Rotate>(box1, Vec3(0, 15, 0)); // 0 degrees in x, 15 degrees in y, 0 degrees in z
+	box1 = make_shared<Translate>(box1, Vec3(265, 0, 295));
+	world.add(box1);
+	shared_ptr<Hittable> box2 = box(Point3(0, 0, 0), Point3(165, 165, 165), white);
+	box2 = make_shared<Rotate>(box2, Vec3(0, -18, 0));
+	box2 = make_shared<Translate>(box2, Vec3(130, 0, 65));
+	world.add(box2);
+
 	Camera cam;
 	cam.aspectRatio = 1.0;
-	cam.imageWidth = 600;
-	cam.samplePerPixel = 200;
-	cam.maxDepth = 50;
+	cam.imageWidth = 1600;
+	cam.samplePerPixel = 400;
+	cam.maxDepth = 100;
 	cam.background = Color(0.0, 0.0, 0.0);
 
 	cam.vfov = 40;

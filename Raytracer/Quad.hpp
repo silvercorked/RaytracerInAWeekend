@@ -2,6 +2,7 @@
 
 #include "common.hpp"
 #include "Hittable.hpp"
+#include "HittableList.hpp"
 
 #include <cmath>
 
@@ -92,3 +93,23 @@ public:
 		return true; // is inside and hit loc on quad is just a, b
 	}
 };
+
+/*
+	Create 3D box (6 sides) that contains the two opposite vertices a & b
+*/
+inline auto box(const Point3& a, const Point3& b, shared_ptr<Material> mat) -> shared_ptr<HittableList> {
+	auto sides = make_shared<HittableList>(); // wrap for object
+	// make the two opposite vertices with the minimum and maximum coordinates.
+	auto min = Point3(fmin(a.x(), b.x()), fmin(a.y(), b.y()), fmin(a.z(), b.z()));
+	auto max = Point3(fmax(a.x(), b.x()), fmax(a.y(), b.y()), fmax(a.z(), b.z()));
+	auto dx = Vec3(max.x() - min.x(), 0, 0);
+	auto dy = Vec3(0, max.y() - min.y(), 0);
+	auto dz = Vec3(0, 0, max.z() - min.z());
+	sides->add(make_shared<Quad>(Point3(min.x(), min.y(), max.z()),  dx,  dy, mat)); // front
+	sides->add(make_shared<Quad>(Point3(max.x(), min.y(), max.z()), -dz,  dy, mat)); // right
+	sides->add(make_shared<Quad>(Point3(max.x(), min.y(), min.z()), -dx,  dy, mat)); // back
+	sides->add(make_shared<Quad>(Point3(min.x(), min.y(), min.z()),  dz,  dy, mat)); // left
+	sides->add(make_shared<Quad>(Point3(min.x(), max.y(), max.z()),  dx, -dz, mat)); // top
+	sides->add(make_shared<Quad>(Point3(min.x(), min.y(), min.z()),  dx,  dz, mat)); // bottom
+	return sides;
+}

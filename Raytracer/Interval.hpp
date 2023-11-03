@@ -30,3 +30,10 @@ struct Interval {
 
 const static Interval empty(+infinity, -infinity);
 const static Interval universe(-infinity, +infinity);
+
+auto operator+(const Interval& ival, double displacement) -> Interval {
+	return Interval(ival.min + displacement, ival.max + displacement);
+}
+auto operator+(double displacement, const Interval& ival) -> Interval {
+	return ival + displacement;
+}

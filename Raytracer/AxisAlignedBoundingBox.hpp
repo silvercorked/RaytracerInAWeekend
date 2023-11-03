@@ -61,3 +61,10 @@ struct AxisAlignedBoundingBox {
 		return true;
 	}
 };
+
+auto operator+(const AxisAlignedBoundingBox& bbox, const Vec3& offset) -> AxisAlignedBoundingBox {
+	return AxisAlignedBoundingBox(bbox.x + offset.x(), bbox.y + offset.y(), bbox.z + offset.z());
+}
+auto operator+(const Vec3& offset, const AxisAlignedBoundingBox& bbox) -> AxisAlignedBoundingBox {
+	return bbox + offset;
+}
