@@ -137,6 +137,7 @@
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Color.hpp" />
     <ClInclude Include="common.hpp" />
+    <ClInclude Include="ConstantMedium.hpp" />
     <ClInclude Include="Perlin.hpp" />
     <ClInclude Include="Quad.hpp" />
     <ClInclude Include="STBImageHelper.hpp" />

@@ -98,3 +98,17 @@ public:
 		return this->emit->value(u, v, p);
 	}
 };
+
+class Isotropic : public Material {
+	shared_ptr<Texture> albedo;
+
+public:
+	Isotropic(Color c) : albedo(make_shared<SolidColor>(c)) {}
+	Isotropic(shared_ptr<Texture> a) : albedo(a) {}
+
+	auto scatter(const Ray& rIn, const HitRecord& rec, Color& attentuation, Ray& scattered) const -> bool override {
+		scattered = Ray(rec.p, randomUnitVector(), rIn.time());
+		attentuation = albedo->value(rec.u, rec.v, rec.p);
+		return true;
+	}
+};

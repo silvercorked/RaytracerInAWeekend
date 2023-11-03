@@ -28,8 +28,8 @@ struct Interval {
 	static const Interval empty, universe;
 };
 
-const static Interval empty(+infinity, -infinity);
-const static Interval universe(-infinity, +infinity);
+const Interval Interval::empty(+infinity, -infinity);
+const Interval Interval::universe(-infinity, +infinity);
 
 auto operator+(const Interval& ival, double displacement) -> Interval {
 	return Interval(ival.min + displacement, ival.max + displacement);

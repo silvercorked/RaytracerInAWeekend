@@ -13,6 +13,8 @@
 #include "BoundingVolumeHierarchy.hpp"
 #include "Texture.hpp"
 #include "Quad.hpp"
+#include "ConstantMedium.hpp"
+#include "BoundingVolumeHierarchy.hpp"
 
 auto randomSpheres() -> void {
 	auto start = std::chrono::high_resolution_clock::now();
@@ -269,8 +271,53 @@ auto cornellBox() -> void {
 	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
 }
 
+auto cornellSmoke() -> void {
+	auto start = std::chrono::high_resolution_clock::now();
+	HittableList world;
+
+	auto red = make_shared<Lambertian>(Color(0.65, 0.05, 0.05));
+	auto white = make_shared<Lambertian>(Color(0.73, 0.73, 0.73));
+	auto green = make_shared<Lambertian>(Color(0.12, 0.45, 0.15));
+	auto light = make_shared<DiffuseLight>(Color(7, 7, 7));
+
+	world.add(make_shared<Quad>(Point3(555, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, 555), green));
+	world.add(make_shared<Quad>(Point3(0, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, 555), red));
+	world.add(make_shared<Quad>(Point3(343, 554, 332), Vec3(-130, 0, 0), Vec3(0, 0, -105), light));
+	world.add(make_shared<Quad>(Point3(0, 0, 0), Vec3(555, 0, 0), Vec3(0, 0, 555), white));
+	world.add(make_shared<Quad>(Point3(555, 555, 555), Vec3(-555, 0, 0), Vec3(0, 0, -555), white));
+	world.add(make_shared<Quad>(Point3(0, 0, 555), Vec3(555, 0, 0), Vec3(0, 555, 0), white));
+
+	shared_ptr<Hittable> box1 = box(Point3(0, 0, 0), Point3(165, 330, 165), white);
+	box1 = make_shared<Rotate>(box1, Vec3(0, 15, 0)); // 0 degrees in x, 15 degrees in y, 0 degrees in z
+	box1 = make_shared<Translate>(box1, Vec3(265, 0, 295));
+	shared_ptr<Hittable> box2 = box(Point3(0, 0, 0), Point3(165, 165, 165), white);
+	box2 = make_shared<Rotate>(box2, Vec3(0, -18, 0));
+	box2 = make_shared<Translate>(box2, Vec3(130, 0, 65));
+	
+	world.add(make_shared<ConstantMedium>(box1, 0.01, Color(0, 0, 0)));
+	world.add(make_shared<ConstantMedium>(box2, 0.01, Color(1, 1, 1)));
+
+	Camera cam;
+	cam.aspectRatio = 1.0;
+	cam.imageWidth = 600;
+	cam.samplePerPixel = 200;
+	cam.maxDepth = 50;
+	cam.background = Color(0.0, 0.0, 0.0);
+
+	cam.vfov = 40;
+	cam.lookFrom = Point3(278, 278, -800);
+	cam.lookAt = Point3(278, 278, 0);
+	cam.vUp = Vec3(0, 1, 0);
+
+	cam.defocusAngle = 0;
+
+	cam.render(world);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start) << std::endl;
+}
+
 int main() {
-	switch (7) {
+	switch (8) {
 		case 1: randomSpheres(); break;
 		case 2: twoSpheres(); break;
 		case 3: earth(); break;
@@ -278,5 +325,6 @@ int main() {
 		case 5: quads(); break;
 		case 6: simpleLight(); break;
 		case 7: cornellBox(); break;
+		case 8: cornellSmoke(); break;
 	}
 }
