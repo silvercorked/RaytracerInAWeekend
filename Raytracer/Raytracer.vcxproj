@@ -148,6 +148,7 @@
     <ClInclude Include="Ray.hpp" />
     <ClInclude Include="Sphere.hpp" />
     <ClInclude Include="Texture.hpp" />
+    <ClInclude Include="ThreadPool.hpp" />
     <ClInclude Include="Vec3.hpp" />
   </ItemGroup>
   <ItemGroup>

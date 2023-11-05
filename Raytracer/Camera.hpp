@@ -2,6 +2,7 @@
 
 #include "common.hpp"
 #include "Material.hpp"
+#include "ThreadPool.hpp"
 
 #include <fstream>
 
@@ -43,16 +44,32 @@ public:
 		std::ofstream outImage;
 		outImage.open("out/image.ppm", std::ios::out | std::ios::trunc);
 		outImage << "P3\n" << this->imageWidth << ' ' << this->imageHeight << "\n255\n";
+		std::vector<Color> colorBuffer(this->imageWidth, Color(0,0,0));
+		ThreadPool* threadPool;
 		for (int j = 0; j < this->imageHeight; j++) {
+			threadPool = new ThreadPool(8);
 			std::cout << "\rScalines remaining: " << (this->imageHeight - j) << ' ' << std::flush;
 			for (int i = 0; i < this->imageWidth; i++) {
-				Color pixelColor(0, 0, 0);
-				for (int sample = 0; sample < samplePerPixel; sample++) {
-					Ray r = getRay(i, j);
-					pixelColor += rayColor(r, this->maxDepth, world);
-				}
-				writeColor(outImage, pixelColor, this->samplePerPixel);
+				threadPool->queueTask([this, i, j, &colorBuffer, &world]() {
+					Color pixelColor(0, 0, 0);
+					for (int sample = 0; sample < this->samplePerPixel; sample++) {
+						Ray r = getRay(i, j);
+						pixelColor += rayColor(r, this->maxDepth, world);
+					}
+					colorBuffer[i] = pixelColor;
+				});
+				//Color pixelColor(0, 0, 0);
+				//for (int sample = 0; sample < this->samplePerPixel; sample++) {
+				//	Ray r = getRay(i, j);
+				//	pixelColor += rayColor(r, this->maxDepth, world);
+				//}
+				//writeColor(outImage, pixelColor, this->samplePerPixel);
 			}
+			while (threadPool->busy())
+				std::this_thread::yield();
+			delete threadPool;
+			for (int i = 0; i < this->imageWidth; i++)
+				writeColor(outImage, colorBuffer[i], this->samplePerPixel);
 		}
 		outImage.close();
 		std::cout << "\nDone.\n";
