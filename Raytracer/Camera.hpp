@@ -15,6 +15,8 @@ class Camera {
 	Vec3 u, v, w;				// Camera frame basis vectors (looking towards -w)
 	Vec3 defocusDiskU;			// Defocus disk horizontal radius
 	Vec3 defocusDiskV;			// Defocus disk vertical radius
+	int sqrtSamplesPerPixel;	// sqrt of samplesPerPixel
+	double reciprocalSqrtSPP;	// reciprocal of sqrt of samplesPerPixel
 public:
 	double aspectRatio = 1.0;	// Ratio of image width over height
 	int imageWidth = 100;		// Rendered image width in pixel count
@@ -46,15 +48,19 @@ public:
 		outImage << "P3\n" << this->imageWidth << ' ' << this->imageHeight << "\n255\n";
 		std::vector<Color> colorBuffer(this->imageWidth, Color(0,0,0));
 		ThreadPool* threadPool;
+		this->sqrtSamplesPerPixel = static_cast<int>(sqrt(this->samplePerPixel));
+		this->reciprocalSqrtSPP = 1.0 / static_cast<double>(this->sqrtSamplesPerPixel);
 		for (int j = 0; j < this->imageHeight; j++) {
 			threadPool = new ThreadPool(8);
 			std::cout << "\rScalines remaining: " << (this->imageHeight - j) << ' ' << std::flush;
 			for (int i = 0; i < this->imageWidth; i++) {
 				threadPool->queueTask([this, i, j, &colorBuffer, &world]() {
 					Color pixelColor(0, 0, 0);
-					for (int sample = 0; sample < this->samplePerPixel; sample++) {
-						Ray r = getRay(i, j);
-						pixelColor += rayColor(r, this->maxDepth, world);
+					for (int sJ = 0; sJ < this->sqrtSamplesPerPixel; sJ++) { // split rays being cast in to stratified set rather than random
+						for (int sI = 0; sI < this->sqrtSamplesPerPixel; sI++) {	// to improve monte carlo estimation of pixel color
+							Ray r = getRay(i, j, sI, sJ);
+							pixelColor += rayColor(r, this->maxDepth, world);
+						}
 					}
 					colorBuffer[i] = pixelColor;
 				});
@@ -120,10 +126,11 @@ private:
 		this->defocusDiskU = this->u * defocusRadius;
 		this->defocusDiskV = this->v * defocusRadius;
 	}
-	auto getRay(int i, int j) const -> Ray {
-		// get a randomly sampled camera ray for the pixel at location i,j, originating from the camera defocus disk
+	auto getRay(int i, int j, int sI, int sJ) const -> Ray {
+		// get a randomly sampled camera ray for the pixel at location i,j,
+		// originating from the camera defocus disk and samples by stratification around the pixel location
 		auto pixelCenter = this->pixel00Location + (i * this->pixelDeltaU) + (j * this->pixelDeltaV);
-		auto pixelSample = pixelCenter + pixelSampleSquare();
+		auto pixelSample = pixelCenter + pixelSampleSquare(sI, sJ);
 		auto rayOrigin = this->defocusAngle <= 0
 			? this->center
 			: this->defocusDiskSample();
@@ -131,10 +138,10 @@ private:
 		auto rayTime = randomDouble();			// random ray time (between start time 0 and end time 1)
 		return Ray(rayOrigin, rayDir, rayTime);
 	}
-	auto pixelSampleSquare() const -> Vec3 {
+	auto pixelSampleSquare(int sI, int sJ) const -> Vec3 {
 		// returns a random point in the square surrouding a pixel at the origin
-		auto px = -0.5 + randomDouble();
-		auto py = -0.5 + randomDouble();
+		auto px = -0.5 + this->reciprocalSqrtSPP * (sI + randomDouble());
+		auto py = -0.5 + this->reciprocalSqrtSPP * (sJ + randomDouble());
 		return (px * this->pixelDeltaU) + (py * this->pixelDeltaV);
 	}
 	auto defocusDiskSample() const -> Point3 {

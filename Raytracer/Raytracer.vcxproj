@@ -149,6 +149,7 @@
     <ClInclude Include="Sphere.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="ThreadPool.hpp" />
+    <ClInclude Include="Triangle.hpp" />
     <ClInclude Include="Vec3.hpp" />
   </ItemGroup>
   <ItemGroup>

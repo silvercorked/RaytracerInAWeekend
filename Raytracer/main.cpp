@@ -254,9 +254,9 @@ auto cornellBox() -> void {
 
 	Camera cam;
 	cam.aspectRatio = 1.0;
-	cam.imageWidth = 1600;
-	cam.samplePerPixel = 400;
-	cam.maxDepth = 100;
+	cam.imageWidth = 600;
+	cam.samplePerPixel = 64;
+	cam.maxDepth = 50;
 	cam.background = Color(0.0, 0.0, 0.0);
 
 	cam.vfov = 40;
@@ -396,7 +396,7 @@ void finalScene(int imageWidth, int samplesPerPixel, int maxDepth) {
 
 
 int main() {
-	switch (9) {
+	switch (7) {
 		case 1: randomSpheres(); break;
 		case 2: twoSpheres(); break;
 		case 3: earth(); break;
