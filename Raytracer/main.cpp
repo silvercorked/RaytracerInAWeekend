@@ -15,6 +15,7 @@
 #include "Quad.hpp"
 #include "ConstantMedium.hpp"
 #include "BoundingVolumeHierarchy.hpp"
+#include "Triangle.hpp"
 
 auto randomSpheres() -> void {
 	auto start = std::chrono::high_resolution_clock::now();
@@ -254,8 +255,8 @@ auto cornellBox() -> void {
 
 	Camera cam;
 	cam.aspectRatio = 1.0;
-	cam.imageWidth = 600;
-	cam.samplePerPixel = 64;
+	cam.imageWidth = 800;
+	cam.samplePerPixel = 100;
 	cam.maxDepth = 50;
 	cam.background = Color(0.0, 0.0, 0.0);
 

@@ -50,7 +50,7 @@ public:
 			n . (P + td) = D
 			t = (D - n . P) / (n . d) // if d and n are parallel, denominator is zero, but also means ray will never hit plane
 		Check hit:
-			if u and v are not parallel (ie, can span R2)
+			if u and v are not parallel (ie, can span R^2)
 			H = Q + a*u + b*v, where H is a point on the plane (where the ray intersects), and a and b are scalars
 			h = H - Q = a * u + b * v
 			u x h = u x (a * u + b * v) = a(u x u) + b(u x v), u x u = 0 =>
