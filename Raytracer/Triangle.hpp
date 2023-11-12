@@ -84,7 +84,7 @@ public:
 			return false;
 		// check if hit on plane is inside plane shape of the triangle
 		auto intersection = r.at(t); // ray hits plane containing triangle at some t within rayT
-		Vec3 planeHitPointVector = intersection - Q;
+		Vec3 planeHitPointVector = intersection - this->Q;
 		auto a = dot(this->w, cross(planeHitPointVector, this->v));
 		auto b = dot(this->w, cross(this->u, planeHitPointVector));
 		if (!isInterior(a, b, rec))

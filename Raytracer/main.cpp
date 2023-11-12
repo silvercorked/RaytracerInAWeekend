@@ -253,11 +253,14 @@ auto cornellBox() -> void {
 	box2 = make_shared<Translate>(box2, Vec3(130, 0, 65));
 	world.add(box2);
 
+	shared_ptr<Hittable> tri = make_shared<Triangle>(Point3(150, 150, 200), Vec3(100, 0, 0), Vec3(0, 100, 0), red);
+	world.add(tri);
+
 	Camera cam;
 	cam.aspectRatio = 1.0;
 	cam.imageWidth = 800;
-	cam.samplePerPixel = 100;
-	cam.maxDepth = 50;
+	cam.samplePerPixel = 150;
+	cam.maxDepth = 30;
 	cam.background = Color(0.0, 0.0, 0.0);
 
 	cam.vfov = 40;
